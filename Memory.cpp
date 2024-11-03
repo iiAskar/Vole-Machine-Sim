@@ -3,7 +3,7 @@
 Memory::Memory() {
     // Initialize memory with "00"
     for(int i = 0; i < size; i++) {
-        memory[i] = "0000";
+        memory[i] = "00";
     }
 }
 
@@ -11,7 +11,7 @@ string Memory::getCellAddress(int address) {
     if (address >= 0 && address < size) {
         return memory[address];
     }
-    return "0000";
+    return "00";
 }
 
 void Memory::setCellAddress(int address, string value) {
@@ -21,19 +21,14 @@ void Memory::setCellAddress(int address, string value) {
 }
 
 void Memory::displayMemory() {
-    // Display column headers
-    cout << "\n    ";
-    for(int i = 0; i < 16; i++) {
-        cout << hex << uppercase <<  setw(4) << '0'<<i ;
-    }
-    cout<<"\n------------------------------------------------------------------------------------";
-
-    // Display memory contents with row headers
-    for(int i = 0; i < size; i++) {
-        if(i % 16 == 0) {
-            cout << "\n" << hex << uppercase << setw(2)<< (i/16) << "0| ";
-        }
-        cout << memory[i] << " ";
-    }
     cout << endl;
+    for(int i = 0, j = 0 ; i < size; i++) {
+
+        
+        cout << setfill('0') << setw(2) << j++ << " |";
+        cout << memory[i] << " " << memory[++i] << "| " << setfill('0') << setw(2) << j++;
+        
+        
+        cout << endl;
+    }
 }
