@@ -1,118 +1,172 @@
-#include <bits/stdc++.h>
 #include "Machine.h"
-#include "Register.h"
-#include "Memory.h"
-using namespace std;
 
-Machine :: Machine() {
-    counter = -1;
-}
-void Machine :: open(string file_name) {
-    ifstream f(file_name);
-    if (!f.is_open()) {
-        cout << "Error opening file: " << file_name << endl;
-        return;
+void Machine::displayMenu() {
+    cout << "\n=== Machine Simulator Menu ===\n";
+    cout << "1. Load and run program (space-separated instructions)\n";
+    cout << "2. Load and run program from file\n";
+    cout << "3. Display current machine state\n";
+    cout << "4. Reset memory and registers\n";
+    cout << "5. Exit\n";
+    cout << "Enter your choice (1-5): ";}
+
+vector<string> Machine::parseInstructions(const string& input) {
+    vector<string> instructions;
+    stringstream ss(input);
+    string instruction;
+
+    while (ss >> instruction) {
+        if (instruction.length() != 4) {
+            throw runtime_error("Invalid instruction format: " + instruction);
+        }
+        instructions.push_back(instruction);
     }
+    return instructions;
+}
+
+vector<string> Machine::loadProgramFromFile(const string& filename) {
+    ifstream file(filename);
+    if (!file) {
+        throw runtime_error("Unable to open file: " + filename);
+    }
+
     string line;
-    vector <string> v(3);
-    while(getline(f,line)){
-        counter++;
-        int indx = 0;
-        int c = 0;
-        for(int i = 0; i < line.length(); i++){
-            if(line[i] == ' '){
-                v[c] = line.substr(indx,i-indx);
-                indx = i+1;
-                c++;
+    getline(file, line);
+    return parseInstructions(line);
+}
+void Machine::resetSystem() {
+    // Reset memory
+    for(int i = 0; i < memory.getSize(); i++) {
+        memory.setCellAddress(i, "00");
+    }
+    // Reset CPU (which includes registers)
+    cpu.reset();
+    cout << "\nMemory and registers have been reset to initial state.\n";
+}
+void Machine::displayFullState() {
+    cout << "\n=== Machine State ===\n";
+    cout << "\nMemory Contents:";
+    memory.displayMemory();
+    cpu.displayState();
+}
+
+void Machine::run() {
+    string choice;
+    vector<string> program;
+    const int DEFAULT_START = 0x10; // Default start location is 16 (0x10)
+
+    while (true) {
+        displayMenu();
+        getline(cin, choice);
+
+        if (choice == "1") {
+            cout << "\nEnter program instructions (space-separated, e.g., '2103 2204 5312 3300 C000'): \n";
+            string input;
+            getline(cin, input);
+
+            cout << "Enter start location (hexadecimal) or press Enter for default (10): ";
+            string startLocStr;
+            getline(cin, startLocStr);
+
+            int startLocation = DEFAULT_START;
+            if (!startLocStr.empty()) {
+                try {
+                    startLocation = stoi(startLocStr, nullptr, 16);
+                } catch (const exception& e) {
+                    cout << "Invalid start location. Using default (10).\n";
+                    startLocation = DEFAULT_START;
+                }
             }
-            else if(i == line.length()-1){
-                v[c] = line.substr(indx,i-indx+1);
+
+            try {
+                program = parseInstructions(input);
+                int address = startLocation;
+                for (const auto& instr : program) {
+                    memory.setCellAddress(address++, instr);
+                }
+
+                cout << "Program loaded successfully at location " << hex << uppercase << startLocation << ".\n";
+                cpu.reset();
+                cpu.setProgramCounter(startLocation);
+
+                cout << "\nPress Enter to execute each instruction...\n";
+                displayFullState();
+
+                string temp;
+                while (!cpu.isHalted()) {
+                    cout << "\nPress Enter to execute next instruction...";
+                    cin.clear();
+                    cin.ignore(1000,'\n');
+                    // Show next instruction to be executed
+                    cout << "\nNext instruction: " << memory.getCellAddress(cpu.getProgramCounter()) << endl;
+                    cpu.executeInstruction();
+                    displayFullState();
+                }
+
+                cout << "\nProgram execution completed.\n";
+            } catch (const exception& e) {
+                cerr << "Error: " << e.what() << endl;
             }
         }
+        else if (choice == "2") {
+            cout << "Enter filename: ";
+            string filename;
+            getline(cin, filename);
 
-        string s = v[0]+v[1].back();
-        M.write(counter, convert(s));
-        counter++;
-        M.write(counter, convert(v[2]));
-    }
-    f.close();
-    work();
+            cout << "Enter start location (hexadecimal) or press Enter for default (10): ";
+            string startLocStr;
+            getline(cin, startLocStr);
 
-}
-void Machine :: work() {
-    for(step = 0; step < counter; step++){
-      //  cout << step << "*\n";
-         op = M.read(step)/16;
-         long val = M.read(step);
-         r = val-(op*16);
-         step++;
-         operations(op,r, M.read(step));
-    }
-}
-long Machine :: convert(string s) {
-    return stol(s, nullptr, 16);
-}
-long Machine:: get_counter(){
-    return counter;
-}
-void Machine :: Load(long address_of_R , long address_of_XY ){
-    long val = R.Get_Value(address_of_XY) ;
-    R.Set_Value(address_of_R , val) ;
-}
-void  Machine :: Move(long address_of_R , long address_of_S){
-    long val = R.Get_Value(address_of_R) ;
-    R.Set_Value(address_of_S , val) ;
- //   Reg.Remove_Register(address_of_R) ;
-}
+            int startLocation = DEFAULT_START;
+            if (!startLocStr.empty()) {
+                try {
+                    startLocation = stoi(startLocStr, nullptr, 16);
+                } catch (const exception& e) {
+                    cout << "Invalid start location. Using default (10).\n";
+                    startLocation = DEFAULT_START;
+                }
+            }
 
-void Machine :: JUMP(long address_of_R , long address_of_XY ) {
-    long value_Of_R0 = R.Get_Value(0);
-    long value_of_R = R.Get_Value(address_of_R);
-    if (value_of_R == value_Of_R0) {
-       step = M.read(step+2);
-       step--;
-    }
-}
-long Machine :: Screen() {
-    return M.read(0);
-}
-void Machine :: operations(long Instruction , long Register_address , long XY) {
-    switch (Instruction) {
-        case 1:{
-            Load(Register_address , XY) ;
+            try {
+                program = loadProgramFromFile(filename);
+                int address = startLocation;
+                for (const auto& instr : program) {
+                    memory.setCellAddress(address++, instr);
+                }
+                cout << "Program loaded successfully at location " << hex << uppercase << startLocation << ".\n";
+                cpu.reset();
+                cpu.setProgramCounter(startLocation);
+                cout << "\nPress Enter to execute each instruction...\n";
+                displayFullState();
+                string temp;
+                while (!cpu.isHalted()) {
+                    cout << "\nPress Enter to execute next instruction...";
+                    cin.clear();
+                    cin.ignore(1000,'\n');
+
+                    // Show next instruction to be executed
+                    cout << "\nNext instruction: " << memory.getCellAddress(cpu.getProgramCounter()) << endl;
+                    cpu.executeInstruction();
+                    displayFullState();
+                }
+
+                cout << "\nProgram execution completed.\n";
+            } catch (const exception& e) {
+                cerr << "Error: " << e.what() << endl;
+            }
+        }
+        else if (choice == "3") {
+            displayFullState();
+        }
+        else if (choice == "4") {
+            resetSystem();
+            displayFullState();
+        }
+        else if (choice == "5") {
+            cout << "Exiting simulator.\n";
             break;
         }
-        case 2:{
-            R.Set_Value(Register_address,XY);
-            break;
-        }
-        case 3:{
-            long l = R.Get_Value(Register_address);
-            M.write(XY,l);
-            break;
-        }
-        case 4 : {
-            long s = XY/16;
-            long t = XY-(s*16);
-            Move(s , t) ;
-            break;
-        }
-        case 5 : {
-            long s=XY/16;
-            long t=XY-(s*16);
-            long num1=R.Get_Value(s);
-            long num2=R.Get_Value(t);
-            long sum=num1+num2;
-            R.Set_Value(Register_address,sum);
-        }
-        case 11:{
-            JUMP(Register_address, XY);
-            break;
-        }
-        case 12:{
-            return;
+        else {
+            cout << "Invalid choice. Please try again.\n";
         }
     }
 }
-
-

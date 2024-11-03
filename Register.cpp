@@ -1,15 +1,27 @@
-#include <iostream>
-using namespace std ;
+
 #include "Register.h"
-Register :: Register() {
-    Register_Container[0] = 0 ;
+Register::Register() {
+    // Initialize registers with "00"
+    for(int i = 0; i < size; i++) {
+        registers[i] = "00";
+    }
 }
-Register ::Register(long address, long value) {
-    Register_Container[address] = value ;
+string Register::getRegister(int reg) {
+    if (reg >= 0 && reg < size) {
+        return registers[reg];
+    }
+    return "00";
 }
-void Register :: Set_Value(long address ,long value) {
-  Register_Container[address] = value ;
+void Register::setRegister(int reg, string value) {
+    if (reg >= 0 && reg < size) {
+        registers[reg] = value;
+    }
 }
-long Register :: Get_Value(long address) {
-    return Register_Container[address] ;
+
+void Register::displayRegisters() {
+    cout << "\nRegisters:" << endl;
+    for(int i = 0; i < size; i++) {
+        cout << hex << uppercase << i << ": " << registers[i] << " ";
+        if((i + 1) % 4 == 0) cout << endl;
+    }
 }

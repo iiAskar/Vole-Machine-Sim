@@ -1,29 +1,24 @@
 #ifndef MACHINE_H
 #define MACHINE_H
-using namespace std;
-#include "Register.h"
-#include "Memory.h"
+
+#include "Cpu.h"
+#include <fstream>
+#include <sstream>
 
 class Machine {
 private:
-    long counter;
-    long op;
-    long r;
-    long m;
-    long step;
+    Memory memory;
+    Cpu cpu;
+    void displayMenu();
+    void resetSystem();
+    vector<string> loadProgramFromFile(const string& filename);
+    vector<string> parseInstructions(const string& input);
+    void displayFullState();
+
 public:
-    Register R;
-    Memory M;
-    Machine();
-    void open(string);
-    void work();
-    long convert(string);
-    void operations(long, long, long );
-    long get_counter();
-    void Load(long address_of_R , long address_of_XY ) ;
-    void Move(long address_of_R , long address_of_S) ;
-    void JUMP(long address_of_R , long address_of_XY ) ;
-    long Screen ();
+    Machine() : cpu(memory) {}
+    void run();
+
 };
 
 #endif //MACHINE_H

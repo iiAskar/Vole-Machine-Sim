@@ -1,17 +1,20 @@
-#include <iostream>
-#include <map>
-using namespace std ;
-#ifndef VOLEMACHINELANGUAGESIMULATOR_REGISTER_H
-#define VOLEMACHINELANGUAGESIMULATOR_REGISTER_H
-    class Register {
-    private:
-        map < long , long > Register_Container ;
-    public:
-        Register() ;
-        Register(long address , long value) ;
-        void Set_Value (long address , long value) ;
-        long Get_Value(long address) ;
-    };
+
+#ifndef REGISTER_H
+#define REGISTER_H
+#include <bits/stdc++.h>
+
+using namespace std;
+
+class Register {
+private:
+    string registers[16];  // 16 registers (0-F in hex)
+    int size = 16;
+public:
+    Register();
+    string getRegister(int reg);
+    void setRegister(int reg, string value);
+    void displayRegisters();
+};
 
 
-#endif //VOLEMACHINELANGUAGESIMULATOR_REGISTER_H
+#endif //REGISTER_H
