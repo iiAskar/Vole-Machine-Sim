@@ -1,3 +1,4 @@
+```mermaid
 classDiagram
     class Register {
         -registers: string[16]
