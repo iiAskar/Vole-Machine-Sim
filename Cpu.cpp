@@ -31,9 +31,11 @@ bool Cpu::isHalted() const {
 void Cpu::executeInstruction() {
     // Fetch
     try {
-        instructionRegister = memory.getCellAddress(programCounter++);
+        instructionRegister = "";
+        instructionRegister += memory.getCellAddress(programCounter++);
+        instructionRegister += memory.getCellAddress(programCounter++);
     } catch(const exception& e) {
-        throw runtime_error("Memory access error at address " + to_string(programCounter - 1));
+        throw runtime_error("Memory access error at address " + to_string(programCounter - 2));
     }
 
     // Decode
@@ -74,6 +76,22 @@ void Cpu::executeInstruction() {
                 int val1 = hexToInt(registers.getRegister(X));
                 int val2 = hexToInt(registers.getRegister(Y));
                 registers.setRegister(R, intToHex((val1 + val2) & 0xFF));
+                break;
+            }
+            case 6: { // ADD floating-point
+                string val1 = registers.getRegister(X);
+                string val2 = registers.getRegister(Y);
+                
+                // Convert hex strings to integers for floating point math
+                float float1 = static_cast<float>(hexToInt(val1)) / 256.0f;
+                float float2 = static_cast<float>(hexToInt(val2)) / 256.0f;
+                
+                // Perform floating point addition
+                float result = float1 + float2;
+                
+                // Convert back to hex format (0-255 range)
+                int intResult = static_cast<int>(result * 256.0f) & 0xFF;
+                registers.setRegister(R, intToHex(intResult));
                 break;
             }
 

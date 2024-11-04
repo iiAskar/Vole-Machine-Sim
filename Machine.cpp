@@ -81,7 +81,9 @@ void Machine::run() {
                 program = parseInstructions(input);
                 int address = startLocation;
                 for (const auto& instr : program) {
-                    memory.setCellAddress(address++, instr);
+                    // Split each 4-character instruction into two 2-character parts
+                    memory.setCellAddress(address++, instr.substr(0, 2));
+                    memory.setCellAddress(address++, instr.substr(2, 2));
                 }
 
                 cout << "Program loaded successfully at location " << hex << uppercase << startLocation << ".\n";
@@ -130,7 +132,9 @@ void Machine::run() {
                 program = loadProgramFromFile(filename);
                 int address = startLocation;
                 for (const auto& instr : program) {
-                    memory.setCellAddress(address++, instr);
+                    // Split each 4-character instruction into two 2-character parts
+                    memory.setCellAddress(address++, instr.substr(0, 2));
+                    memory.setCellAddress(address++, instr.substr(2, 2));
                 }
                 cout << "Program loaded successfully at location " << hex << uppercase << startLocation << ".\n";
                 cpu.reset();
